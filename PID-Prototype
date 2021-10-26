@@ -31,7 +31,7 @@ void PIDstrafe(float kP, float kI, float kD, float time, float degrees, float sp
 		displayNextLCDNumber(current_error);
 		motorSpeed = (kP * proportional) + (kD * derivative);
 		float motorXspeed = (speed) * cos(converted_radians) + motorSpeed;
-		float motorYspeed = (speed) * sin(converted_radians) + motorSpeed;
+		float motorYspeed = (speed) * sin(converted_radians) - motorSpeed;
 
 		motor[leftFront] = motorXspeed;
 		motor[rightFront] = motorYspeed;
