@@ -9,6 +9,7 @@ void PIDstrafe(float kP, float kI, float kD, float time, float degrees, float sp
 	SensorType[in4] = sensorNone;
 	SensorType[in4] = sensorGyro;
 	SensorScale[in4] = 1275;
+	wait1Msec(1000);
 	float radians = degreesToRadians(degrees);
 	float converted_radians = (radians - PI / 4);
 
