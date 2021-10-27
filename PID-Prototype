@@ -46,5 +46,5 @@ void PIDstrafe(float kP, float kI, float kD, float time, float degrees, float sp
 }
 task main()
 {
-PIDstrafe(0.1, 0.03, 0.03, 10000, 0, 50);
+PIDstrafe(0.7, 0.03, 0.03, 10000, 0, 70);
 }
