@@ -44,7 +44,37 @@ void PIDstrafe(float kP, float kI, float kD, float time, float degrees, float sp
 	motor[leftBack] =  0;
 	motor[rightBack] = 0;
 }
+
+void gyroRegularTurn(float degrees){
+	float whileLoop = true;
+	float Sensor;
+	while(whileLoop == true){
+		motor [leftFront] = -20;
+		motor[rightFront] = -20;
+		motor[leftBack] = 20;
+		motor[rightBack] = 20;
+		Sensor = SensorValue[in4];
+		displayNextLCDNumber(Sensor);
+		clearLCDLine(0);
+		if (Sensor >= degrees){
+			whileLoop = false;
+		}
+	}
+	motor [leftFront] = 0;
+	motor[rightFront] = 0;
+	motor[leftBack] =  0;
+	motor[rightBack] = 0;
+}
+
+void gyroReset(){
+	wait1Msec(1000);
+	SensorType[in4] = sensorNone;
+	SensorType[in4] = sensorGyro;
+	SensorScale[in4] = 1050;
+	wait1Msec(1000);
+}	
 task main()
 {
-PIDstrafe(0.7, 0.03, 0.03, 10000, 0, 70);
+	gyroReset();
+	gyroRegularTurn(90);
 }
