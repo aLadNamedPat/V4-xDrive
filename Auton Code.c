@@ -15,23 +15,23 @@ void encoderDrive(float distanceInFeet, float speed, float degrees){
 	SensorValue[leftTopEncoder] = 0;
 	SensorValue[leftBottomEncoder] = 0;
 	float radians = degreesToRadians(degrees);
-//Converts based on a 45 degree shifted axis
+	//Converts based on a 45 degree shifted axis
 	float converted_radians = (radians - PI / 4);
-// Change motor power based on power
-// X motor power
+	// Change motor power based on power
+	// X motor power
 	float motorXspeed = speed * cos(converted_radians);
-// Y motor power
+	// Y motor power
 	float motorYspeed = speed * sin(converted_radians);
-// Finds distance needed to be traveled in X-axis
+	// Finds distance needed to be traveled in X-axis
 	float xDistance = distanceInFeet * cos(converted_radians);
-// Finds distance needed to be traveled in Y-axis
+	// Finds distance needed to be traveled in Y-axis
 	float yDistance = distanceInFeet * sin(converted_radians);
-// Converts distances needed into degree turns for robot motors
+	// Converts distances needed into degree turns for robot motors
 	float xDegrees = xDistance * 4320 / PI / wheelDiameter;
 	float yDegrees = yDistance * 4320 / PI / wheelDiameter;
-//Different cases of different degrees (positive and negative)
-//Purpose is to account for the case such that one motor is unable to turn.
-//This way, the robot will not overrun even when such a case is true
+	//Different cases of different degrees (positive and negative)
+	//Purpose is to account for the case such that one motor is unable to turn.
+	//This way, the robot will not overrun even when such a case is true
 	if (xDegrees > 0 && yDegrees > 0){
 		while((-SensorValue[leftTopEncoder] + SensorValue[leftBottomEncoder])< xDegrees + yDegrees){
 			motor[leftFront] = motorXspeed;
@@ -44,8 +44,8 @@ void encoderDrive(float distanceInFeet, float speed, float degrees){
 			displayNextLCDNumber(sensorValue[leftBottomEncoder], 1);
 		}
 	}
-	else if (xDegrees > 0 && yDegrees < 0){
-		while(SensorValue[leftBottomEncoder] < xDegrees){
+	else if (xDegrees > 0 && yDegrees <= 0){
+		while(SensorValue[leftTopEncoder] > yDegrees){
 			motor[leftFront] = motorXspeed;
 			motor[rightFront] = motorYspeed;
 			motor[leftBack] =  motorYspeed;
@@ -54,10 +54,10 @@ void encoderDrive(float distanceInFeet, float speed, float degrees){
 			clearLCDLine(1);
 			displayNextLCDNumber(sensorValue[leftTopEncoder], 0);
 			displayNextLCDNumber(sensorValue[leftBottomEncoder], 1);
-			}
+		}
 	}
 	//Make sure to adjust code so that yDegrees and leftBottomEncoder match
-	else if (xDegrees < 0 && yDegrees > 0) {
+	else if (xDegrees < 0 && yDegrees >= 0) {
 		while(SensorValue[leftBottomEncoder] < yDegrees){
 			motor[leftFront] = motorXspeed;
 			motor[rightFront] = motorYspeed;
@@ -67,10 +67,10 @@ void encoderDrive(float distanceInFeet, float speed, float degrees){
 			clearLCDLine(1);
 			displayNextLCDNumber(sensorValue[leftTopEncoder], 0);
 			displayNextLCDNumber(sensorValue[leftBottomEncoder], 1);
-	  }
+		}
 	}
 	else {
-		while((-SensorValue[leftTopEncoder] + SensorValue[leftBottomEncoder]) > xDegrees - yDegrees){
+		while((-SensorValue[leftTopEncoder] + SensorValue[leftBottomEncoder]) > xDegrees + yDegrees){
 			motor[leftFront] = motorXspeed;
 			motor[rightFront] = motorYspeed;
 			motor[leftBack] =  motorYspeed;
@@ -87,209 +87,68 @@ void encoderDrive(float distanceInFeet, float speed, float degrees){
 	motor[rightBack] = 0;
 }
 
-void turn90Degrees(bool counterclockwise, float speed){
-	SensorValue[leftTopEncoder] = 0;
-	SensorValue[leftBottomEncoder] = 0;
-	if (counterclockwise) {
-		while(((SensorValue[leftTopEncoder] + sensorValue[leftBottomEncoder]) / 2) < 450){
-		motor[leftFront] = speed;
-		motor[rightFront] = speed;
-		motor[leftBack] = -speed;
-		motor[rightBack] = -speed;
-		}
-	}
-	else{
-		while(((SensorValue[leftTopEncoder] + sensorValue[leftBottomEncoder]) / 2) > -450){
-		motor[leftFront] = -speed;
-		motor[rightFront] = -speed;
-		motor[leftBack] = speed;
-		motor[rightBack] = speed;
-		}
-	}
-	motor[leftFront] = 0;
-	motor[rightFront] = 0;
-	motor[leftBack] = 0;
-	motor[rightBack] = 0;
-}
-void accelerationStrafe(float degrees, float topSpeed, float distanceInFeet, float accelTime = 1.5){
-	float radians = degreesToRadians(degrees);
-	float converted_radians = (radians - PI / 4);
-//Top speed to be reached for both X and Y motors on 45 degree axis
-	float motorXTopSpeed = topSpeed * cos(converted_radians);
-	float motorYTopSpeed = topSpeed * sin(converted_radians);
-// v/t = a
-	float accelXconst = motorXTopSpeed / accelTime;
-	float accelYconst = motorYTopSpeed / accelTime;
-// setting up motor speeds to 0
-	float motorXspeed = 0;
-	float motorYspeed = 0;
-	clearTimer(T1);
-//accelerating so that the motor reaches top speed
-	while(motorXspeed < motorXTopSpeed){
-		motor[leftFront] = motorXspeed;
-		motor[rightFront] = motorYspeed;
-		motor[leftBack] =  motorYspeed;
-		motor[rightBack] = motorXspeed;
-		if (time1[T1] > 100){
-			clearTimer(T1);
-			motorXspeed += (0.1 * accelXconst);
-			motorYspeed += (0.1 * accelYconst);
-		}
-	}
-}
-
-void encoderTest(){
-	SensorValue[leftBottomEncoder] = 0;
-	while(true){
-		motor[rightBack] = 50;
-		displayNextLCDNumber(sensorValue[leftTopEncoder]);
-//leftTopEncoder is negative when spin is positive
-		clearLCDLine(0);
-	}
-}
-
-/*
-void PIDstrafe(float kP, float kI, float kD, float time, float degrees, float speed){
-	SensorType[in4] = sensorNone;
-	SensorType[in4] = sensorGyro;
-	SensorScale[in4] = 1275;
-	wait1Msec(1000);
-	float radians = degreesToRadians(degrees);
-	float converted_radians = (radians - PI / 4);
-
-	float current_error = SensorValue[in4];
-	float last_error = 0;
-
-	float proportional;
-	float derivative;
-	float integral;
-	float motorSpeed;
-	clearTimer(timer1);
-
-	while(time1[timer1] < time){
-		current_error = SensorValue[in4];
-		proportional = current_error;
-		derivative = current_error - last_error;
-		last_error = current_error;
-		integral += current_error;
-		displayNextLCDNumber(current_error);
-		motorSpeed = (kP * proportional) + (kD * derivative);
-		float motorXspeed = (speed) * cos(converted_radians) + motorSpeed;
-		float motorYspeed = (speed) * sin(converted_radians) - motorSpeed;
-
-		motor[leftFront] = motorXspeed;
-		motor[rightFront] = motorYspeed;
-		motor[leftBack] =  motorYspeed;
-		motor[rightBack] = motorXspeed;
-		clearLCDLine(0);
-	}
-	motor[leftFront] = 0;
-	motor[rightFront] = 0;
-	motor[leftBack] =  0;
-	motor[rightBack] = 0;
-}
-
-void gyroRegularTurn(float degrees){
-	bool whileLoop = true;
-	float Sensor;
-	if (degrees <= 0){
-		while(whileLoop){
-			motor [leftFront] = -20;
-			motor[rightFront] = -20;
-			motor[leftBack] = 20;
-			motor[rightBack] = 20;
-			Sensor = SensorValue[in4];
-			displayNextLCDNumber(Sensor);
-			clearLCDLine(0);
-			if (Sensor >= degrees)
-				{
-				whileLoop = false;
-				}
-		}
-	}
-	if (degrees > 0){
-		while(whileLoop){
-			motor [leftFront] = 20;
-			motor[rightFront] = 20;
-			motor[leftBack] = -20;
-			motor[rightBack] = -20;
-			Sensor = SensorValue[in4];
-			displayNextLCDNumber(Sensor);
-			clearLCDLine(0);
-			if (Sensor <= degrees)
-				{
-				whileLoop = false;
-				}
-		}
-	}
-	motor [leftFront] = 0;
-	motor[rightFront] = 0;
-	motor[leftBack] =  0;
-	motor[rightBack] = 0;
-}
-
-void gyroReset(){
-	wait1Msec(1000);
-	SensorType[in4] = sensorNone;
-	SensorType[in4] = sensorGyro;
-	SensorScale[in4] = 1050;
-	wait1Msec(1000);
-}
-*/
-
-
-
-/*
-void turn(float speed, float time) {
-	motor[leftFront] = speed;
-	motor[rightFront] = speed;
-	motor[leftBack] = -speed;
-	motor[rightBack] = -speed;
-	wait1Msec(time);
-}
-*/
-
-
-
-void Stop(float time) {
-	motor[leftFront] = 0;
-	motor[rightFront] = 0;
-	motor[leftBack] =  0;
-	motor[rightBack] = 0;
-	wait1Msec(time);
-}
-
 task main()
 {
-//90 degrees is 90 degrees to the right of the front side
-//wait1Msec(1000);
+	//90 degrees is 90 degrees to the right of the front side
+	//wait1Msec(1000);
 
-//timeStrafe(90, 127, 1800);
-//Stop(1000);
-//timeStrafe(90, 127, 2350);
-//Stop(1000);
-//timeStrafe(90, 127, 3000);
-//Stop(1000);
-//timeStrafe(0, 127, 6300);
-//turn(-20, 200);
-//Stop(1000);
-//timeStrafe(270, 127, 2500);
-//Stop(1000);
-//timeStrafe(270, 127, 5200);
-//Stop(1000);
-//timeStrafe(132, 127, 12000);
-//Stop(1000);
-//==================================
-turn90Degrees(true ,20);
-//encoderDrive(1.75, 40, 90);
-//make turn here
-//encoderDrive(3, 40, 90);
-//make turn here
-//encoderDrive(1.85,40,90);
-//make turn here
-//encoderDrive(1.25, 40,90);
-//==================================
-//accelerationStrafe(70, 100, 0.5, 3);
-//Stop(1000);
-//encoderTest();
+	//timeStrafe(90, 127, 1800);
+	//Stop(1000);
+	//timeStrafe(90, 127, 2350);
+	//Stop(1000);
+	//timeStrafe(90, 127, 3000);
+	//Stop(1000);
+	//timeStrafe(0, 127, 6300);
+	//turn(-20, 200);
+	//Stop(1000);
+	//timeStrafe(270, 127, 2500);
+	//Stop(1000);
+	//timeStrafe(270, 127, 5200);
+	//Stop(1000);
+	//timeStrafe(132, 127, 12000);
+	//Stop(1000);
+	//==================================
+	//wait(1);
+
+	//encoderDrive(1.75, 40, 90);
+	//wait(0.5);
+	//turn90Degrees(false ,25);
+	//wait(0.5);
+	//encoderDrive(3, 40, 90);
+	//wait(0.5);
+	//turn90Degrees(true ,25);
+	//wait(0.5);
+	//encoderDrive(1.85,40,90);
+	//wait(0.5);
+	//turn90Degrees(true ,25);
+	//wait(0.5);
+	//encoderDrive(1.20, 40,90);
+	//==================================
+	//==================================
+	wait(1);
+	encoderDrive(6, 70, 90);
+	wait(1);
+	encoderDrive(5.5, 70, 180);
+	wait(0.5);
+	encoderDrive(6.2, 70, 270);
+	wait(0.5);
+	//encoderDrive(5.2, 70, 90);
+	//wait(0.5);
+	encoderDrive(1.5, 70, 360);
+	wait(0.5);
+	encoderDrive(2.5, 70, 90);
+	wait(0.5);
+	encoderDrive(1.5, 70, 360);
+	wait(0.5);
+	encoderDrive(2.5, 70, 270);
+	wait(0.5);
+	encoderDrive(1.5, 70, 360);
+	//==================================
+
+	//==================================
+	//gyroTest();
+	//==================================
+	//accelerationStrafe(70, 100, 0.5, 3);
+	//Stop(1000);
+	//encoderTest();
 }
