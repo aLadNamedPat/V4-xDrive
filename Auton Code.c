@@ -127,22 +127,28 @@ task main()
 	//==================================
 	wait(1);
 	encoderDrive(6, 70, 90);
+	//Drives forward for 6 feet
 	wait(1);
 	encoderDrive(5.5, 70, 180);
+	//Drives right for 5.5 feet
 	wait(0.5);
 	encoderDrive(6.2, 70, 270);
+	//Drives back for 6.2 feet
 	wait(0.5);
-	//encoderDrive(5.2, 70, 90);
-	//wait(0.5);
 	encoderDrive(1.5, 70, 360);
+	//Drives left for 1.5 feet
 	wait(0.5);
 	encoderDrive(2.5, 70, 90);
+	//Drive up forward for 2.5 feet
 	wait(0.5);
 	encoderDrive(1.5, 70, 360);
+	//Drive left for 1.5 feet
 	wait(0.5);
 	encoderDrive(2.5, 70, 270);
+	//Drive back for 2.5 feet
 	wait(0.5);
 	encoderDrive(1.5, 70, 360);
+	//Drive left for 1.5 feet
 	//==================================
 
 	//==================================
